@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import QuestionCard from "./QuestionCard";
-import axios from "axios";
 
 const ExamDisplay = ({ exam, onReset }) => {
   const [answers, setAnswers] = useState({});
@@ -8,29 +7,36 @@ const ExamDisplay = ({ exam, onReset }) => {
   const [parsedQuestions, setParsedQuestions] = useState([]);
 
   useEffect(() => {
-    const questions = exam.questions.map((q) => {
-      // Clean the question_data by extracting only the content inside the braces
-      let cleanedData = q.question_data.replace(/^[^\{]*\{([\s\S]*)\}[^\}]*$/, "$1"); // Keep only content inside {}
+    console.log("Raw Exam Data:", exam);
 
-      // Escape problematic characters (e.g., newline, carriage return, tabs, etc.)
+    const questions = exam.questions.map((q, index) => {
+      console.log(`Raw Question ${index + 1}:`, q);
+
+      let cleanedData = q.question_data.replace(/^[^\{]*\{([\s\S]*)\}[^\}]*$/, "$1");
       cleanedData = cleanedData.replace(/[\u0000-\u001F\u007F-\u009F]/g, ""); // Remove control characters
-      cleanedData = cleanedData.replace(/\\"/g, '"'); // Handle escaped quotes if needed
+      cleanedData = cleanedData.replace(/\\"/g, '"'); // Handle escaped quotes
+      cleanedData = cleanedData.replace(/"([^"]*?)"/g, (match, group) =>
+        group.includes('"') ? `"${group.replace(/"/g, '\\"')}"` : match
+      ); // Escape improperly nested double quotes
 
-      // Parse the cleaned JSON string
       try {
-        const questionData = JSON.parse(`{${cleanedData}}`);  // Wrap the cleanedData to ensure it's valid JSON
+        console.log(`Cleaned Data for Question ${index + 1}:`, cleanedData);
+        const questionData = JSON.parse(`{${cleanedData}}`);
 
         return {
-          ...q,  // Keep other properties (like source_content, type, etc.)
-          ...questionData,  // Merge the parsed data
+          ...q,
+          ...questionData,
         };
       } catch (error) {
-        console.error("Error parsing JSON:", error);
-        return q;  // Return the original data if parsing fails
+        console.error(`Error parsing JSON for Question ${index + 1}:`, error, cleanedData);
+        return {
+          ...q,
+          error: "Invalid question data format. Could not parse.",
+        };
       }
     });
 
-    setParsedQuestions(questions);  // Update the state with parsed questions
+    setParsedQuestions(questions);
   }, [exam]);
 
   const handleAnswerChange = (questionIndex, answer) => {
@@ -44,17 +50,22 @@ const ExamDisplay = ({ exam, onReset }) => {
     setSubmitted(true);
   };
 
+  const handleReinitialize = () => {
+    setAnswers({}); // Clear previous answers
+    setSubmitted(false); // Hide results
+  };
+
   const correctAnswers = parsedQuestions.filter(
     (q, index) => answers[index] === q.correct_answer
   ).length;
 
   return (
     <div className="space-y-6">
-      {/* Back Arrow Button to reset the exam */}
+      {/* Back Arrow Button */}
       <div className="flex items-center space-x-2 cursor-pointer" onClick={onReset}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="w-6 h-6 text-indigo-600"
+          className="w-5 h-5 text-black"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -66,13 +77,40 @@ const ExamDisplay = ({ exam, onReset }) => {
             d="M15 19l-7-7 7-7"
           />
         </svg>
-        <span className="text-indigo-600 text-lg font-semibold">Retour aux questions</span>
+        <span className="text-black text-base font-semibold">Retourner en arrière</span>
       </div>
 
-      {/* Title */}
-      <h2 className="text-4xl font-bold text-indigo-600 mt-6">
-        Examen généré : {parsedQuestions.length} questions
-      </h2>
+      {/* Title Row with Reinitialize Icon */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-4xl font-bold text-indigo-600">
+          Examen généré :{" "}
+          <span className="font-medium text-black text-2xl">
+            {parsedQuestions.length} questions
+          </span>
+        </h2>
+
+        {/* Reinitialize Button */}
+        <button
+          className="flex items-center space-x-1 text-indigo-600 hover:text-indigo-800"
+          onClick={handleReinitialize}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M4 4v6h6M20 20v-6h-6M5 19l14-14"
+            />
+          </svg>
+          <span className="font-medium">Réinitialiser</span>
+        </button>
+      </div>
 
       {/* Display all questions */}
       {parsedQuestions.map((question, index) => (
@@ -86,7 +124,7 @@ const ExamDisplay = ({ exam, onReset }) => {
         />
       ))}
 
-      {/* Button to submit answers */}
+      {/* Submit Button */}
       {!submitted && (
         <div className="flex justify-center mt-4">
           <button
@@ -109,7 +147,7 @@ const ExamDisplay = ({ exam, onReset }) => {
             Vous avez répondu correctement à{" "}
             <span className="font-semibold text-indigo-600">{correctAnswers}</span>{" "}
             questions sur{" "}
-            <span className="font-semibold text-indigo-600">{parsedQuestions.length}</span> .
+            <span className="font-semibold text-indigo-600">{parsedQuestions.length}</span>.
           </p>
         </div>
       )}

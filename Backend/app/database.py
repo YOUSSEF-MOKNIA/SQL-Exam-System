@@ -10,7 +10,7 @@ db = client[DATABASE_NAME]
 
 # Users collection
 users_collection = db["users"]
-
+exams_collection = db["exams"]
 # To ensure unique usernames and emails, set up indexes in MongoDB
 try:
     users_collection.create_index("username", unique=True)

@@ -33,21 +33,21 @@ def generate_questions_parallel(base, query, question_type, question_nbr, ollama
 # Generate QCM questions
 def generate_mcq(content, query, ollama_model, difficulty="intermédiaire"):
     prompt = f"""
-    Agis comme un système français spécialisé dans la génération de questions à choix multiples (QCM). 
-    Génère une question de niveau {difficulty} en français basée sur le contenu suivant. 
+    Agis comme un système expert en génération de questions à choix multiples (QCM) en français. 
+    Génère une question de niveau {difficulty} strictement basée sur le contenu fourni ci-dessous, en respectant les consignes suivantes :
     
-    La question doit :
-    1. Tester la compréhension d’un concept clé lié à la requête suivante : '{query}'.
-    2. Si la question nécessite un contexte ou du code, inclure ces informations dans la question.
-    3. Être claire et bien structurée, sans références inutiles au contenu source.
-    4. Contenir uniquement :
-        - Une question pertinente
-        - Quatre options de réponse (A, B, C, D), avec une seule réponse correcte
-        - La réponse correcte clairement identifiée
-        - Une explication concise en français, expliquant pourquoi la réponse est correcte.
+    1. **Lien avec la requête** : La question doit être directement liée au concept suivant : '{query}'.
+    2. **Contexte nécessaire** : Si la question nécessite un contexte supplémentaire (exemple, explication ou code), inclure ce contexte dans la formulation de la question.
+    3. **Adhérence au contenu** : Toutes les informations dans la question, les options et les explications doivent provenir exclusivement du contenu fourni. Évite tout ajout inutile ou non fondé.
+    4. **Structure stricte** : 
+        - Une question pertinente et bien formulée.
+        - Quatre options de réponse (A, B, C, D), avec une option correcte.
+        - Si nécessaire, inclure une option indiquant que toutes les réponses sont correctes ou qu’aucune n’est correcte.
+        - Une seule réponse correcte clairement identifiée.
+        - Une explication concise en français expliquant pourquoi la réponse correcte est valide, sans référencer directement le contenu source.
+    5. **Format JSON obligatoire** : Respecter strictement le format suivant pour la sortie :
 
-    Formate la réponse dans un format JSON comme suit :
-
+    ```json
     {{
         "question": "<la question>",
         "options": {{
@@ -59,12 +59,16 @@ def generate_mcq(content, query, ollama_model, difficulty="intermédiaire"):
         "correct_answer": "<la réponse correcte>",
         "explanation": "<explication concise>"
     }}
+    ```
 
-    Contenu pour générer la question :
-{content}
+    **Note importante** : Si toutes les options sont valides ou aucune ne l'est, cela doit être clairement indiqué dans les options et dans l'explication.
+
+    Contenu à utiliser pour générer la question :
+    {content}
     """
     response = ollama_model.invoke(prompt)
     return response
+
 
 
 # Generate open-ended questions

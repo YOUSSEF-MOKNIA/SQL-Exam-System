@@ -11,6 +11,7 @@ export const fetchExam = async (
   cancelToken
 ) => {
   try {
+    const token = localStorage.getItem("token"); // Retrieve the token
     const response = await axios.post(
       `${API_BASE_URL}/Exam/generate-exam`,
       {
@@ -19,7 +20,12 @@ export const fetchExam = async (
         difficulty,
         question_type: questionType,
       },
-      { cancelToken }
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Include token in Authorization header
+        },
+        cancelToken,
+      }
     );
     return response.data;
   } catch (error) {
@@ -29,5 +35,22 @@ export const fetchExam = async (
       console.error("Error fetching the exam:", error);
       throw error;
     }
+  }
+};
+
+
+export const fetchExamHistory = async () => {
+  try {
+    const token = localStorage.getItem("token"); // Retrieve the token
+    const response = await axios.get(`${API_BASE_URL}/Exam/exam_history`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // Include token in Authorization header
+      },
+    });
+    console.log(response.data);
+    return response.data.exams; // Return the exam history
+  } catch (error) {
+    console.error("Error fetching the exam history:", error);
+    throw error;
   }
 };
