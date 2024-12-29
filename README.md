@@ -98,7 +98,7 @@ Before running the project, ensure you have the following installed:
 
 ## File Structure
 
-SQL-Exam-System/ ├── backend/ # Backend FastAPI code │ ├── routers/ # API endpoints │ ├── services/ # Core logic for question generation │ ├── schemas/ # Pydantic models │ ├── utils / │ ├── database.py # Database setup │ ├── main.py # FastAPI app setup │ └── requirements.txt # Python dependencies ├── frontend/ # Frontend React code │ ├── components/ # React components │ ├── api/ # API calls to backend │ ├── App.js # Main App component │ ├── index.js # React entry point │ └── tailwind.config.js # TailwindCSS configuration ├── .gitignore # Git ignore file └── README.md # Project documentation
+SQL-Exam-System/ ├── backend/ # Backend FastAPI code │ ├── routers/ # API endpoints │ ├── services/ # Core logic for question generation │ ├── schemas/ # Pydantic models │ ├── database.py # Database setup │ ├── main.py # FastAPI app setup │ └── requirements.txt # Python dependencies ├── frontend/ # Frontend React code │ ├── components/ # React components │ ├── api/ # API calls to backend │ ├── App.js # Main App component │ ├── index.js # React entry point │ └── tailwind.config.js # TailwindCSS configuration ├── .gitignore # Git ignore file └── README.md # Project documentation
 
 
 ## API Documentation
