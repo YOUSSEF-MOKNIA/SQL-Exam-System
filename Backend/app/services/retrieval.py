@@ -36,7 +36,7 @@ def rerank_documents(query, documents):
     return [doc["document"] for doc in re_ranked]
 
 # Main retrieval and re-ranking pipeline
-def retrieve_and_rerank(query, faiss_index, k=25, top_n=5):
+def retrieve_and_rerank(query, faiss_index, k=25, top_n=10):
 
     # Step 1: Retrieve top-k relevant documents from FAISS index
     retrieved_docs = retrieve_documents_from_faiss(query, faiss_index, k)

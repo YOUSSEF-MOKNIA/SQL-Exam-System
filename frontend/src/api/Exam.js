@@ -54,3 +54,17 @@ export const fetchExamHistory = async () => {
     throw error;
   }
 };
+
+export const deleteExam = async (id) => {
+  try {
+    const token = localStorage.getItem("token");
+    await axios.delete(`${API_BASE_URL}/Exam/delete-exam/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.error("Error deleting exam:", error);
+    throw error;
+  }
+};

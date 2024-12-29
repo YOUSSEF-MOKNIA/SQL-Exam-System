@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { BookOpen, Send, Lightbulb } from "lucide-react";
 
 const ExamForm = ({ onSubmit }) => {
   const [query, setQuery] = useState("");
@@ -11,122 +12,127 @@ const ExamForm = ({ onSubmit }) => {
     onSubmit({ query, questionNbr, difficulty, questionType });
   };
 
+  const examplePrompts = [
+    { text: "Jointures en SQL", icon: "🔗" },
+    { text: "Requêtes SQL", icon: "📝" },
+    { text: "Les agrégats", icon: "📊" },
+    { text: "Transactions SQL", icon: "💾" },
+    { text: "Triggers (déclencheurs)", icon: "⚡" },
+  ];
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6">
-      {/* Header */}
-      <div className="text-center mb-6">
-        <h1 className="text-5xl font-bold text-indigo-600">Bienvenue sur ASK<span className="text-[#F9C650]">.Base</span></h1>
-        <p className="mt-2 text-lg text-gray-600">
-          Configurez vos préférences et générez des examens basés sur SQL en un clic.
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white p-6 rounded-xl">
+      <div className="max-w-5xl mx-auto">
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center mb-4">
+            <BookOpen className="w-12 h-12 text-indigo-600 mr-4" />
+            <h1 className="text-5xl font-bold">
+              <span className="text-indigo-600">ASK</span>
+              <span className="text-yellow-500">.Base</span>
+            </h1>
+          </div>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            Générez des examens SQL personnalisés en quelques clics. 
+            Choisissez vos préférences et laissez-nous créer le parfait ensemble de questions.
+          </p>
+        </div>
+
+        {/* Main Form */}
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Example Prompts Section */}
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+            <div className="flex items-center mb-4">
+              <Lightbulb className="w-5 h-5 text-yellow-500 mr-2" />
+              <h2 className="text-lg font-semibold text-gray-700">Suggestions de sujets</h2>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {examplePrompts.map(({ text, icon }) => (
+                <button
+                  key={text}
+                  type="button"
+                  onClick={() => setQuery(text)}
+                  className="flex items-center px-4 py-2 bg-white border-2 border-indigo-100 rounded-full text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition-all duration-200"
+                >
+                  <span className="mr-2">{icon}</span>
+                  {text}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Configuration Grid */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Number of Questions */}
+            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nombre de questions (1-10)
+              </label>
+              <input
+                type="number"
+                value={questionNbr}
+                onChange={(e) => setQuestionNbr(Number(e.target.value))}
+                min="1"
+                max="10"
+                required
+                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+
+            {/* Difficulty */}
+            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Difficulté
+              </label>
+              <select
+                value={difficulty}
+                onChange={(e) => setDifficulty(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="beginner">Débutant</option>
+                <option value="intermediate">Intermédiaire</option>
+                <option value="advanced">Avancé</option>
+              </select>
+            </div>
+
+            {/* Question Type */}
+            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Type de question
+              </label>
+              <select
+                value={questionType}
+                onChange={(e) => setQuestionType(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="mcq">QCM</option>
+                <option value="open-ended">Questions ouvertes</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Query Input */}
+          <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+            <div className="relative">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                required
+                placeholder="Entrez votre sujet de SQL ici..."
+                className="w-full pl-6 pr-24 py-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+              />
+              <button
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                Générer
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
-
-      {/* Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="w-full px-6 flex flex-col space-y-6 mt-8 max-w-3xl mx-auto"
-      >
-        {/* Example Prompts */}
-        <div className="flex flex-wrap justify-center space-x-6 mb-2 text-sm text-gray-500 ">
-          <button
-            type="button"
-            onClick={() => setQuery("Le jointures en SQL")}
-            className="px-4 py-2 bg-[#A6C6ED] bg-opacity-50 hover:bg-opacity-80 focus:outline-none rounded-full"
-          >
-            Le jointures en SQL
-          </button>
-          <button
-            type="button"
-            onClick={() => setQuery("Les requêtes SQL")}
-            className="px-4 py-2 bg-[#A6C6ED] bg-opacity-50 hover:bg-opacity-80 focus:outline-none rounded-full"
-          >
-           Les requêtes SQL
-          </button>
-          <button
-            type="button"
-            onClick={() => setQuery("Les types de donnee en SQL")}
-            className="px-4 py-2 bg-[#A6C6ED] bg-opacity-50 hover:bg-opacity-80 focus:outline-none rounded-full"
-          >
-            Les types de donnee en SQL
-          </button>
-          <button
-            type="button"
-            onClick={() => setQuery("TransactSQL")}
-            className="px-4 py-2 bg-[#A6C6ED] bg-opacity-50 hover:bg-opacity-80 rounded-full focus:outline-none"
-          >
-            TransactSQL
-          </button>
-        </div>
-
-        {/* Inputs Row */}
-        <div className="flex flex-wrap justify-between items-center space-y-4 lg:space-y-0 lg:space-x-4">
-          <div className="flex-1 min-w-[150px]">
-            <label htmlFor="questionNbr" className="block text-sm font-medium text-gray-700">
-              Nombre de questions
-            </label>
-            <input
-              type="number"
-              id="questionNbr"
-              value={questionNbr}
-              onChange={(e) => setQuestionNbr(Number(e.target.value))}
-              min="1"
-              required
-              className="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <div className="flex-1 min-w-[150px]">
-            <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700">
-              Difficulté
-            </label>
-            <select
-              id="difficulty"
-              value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value)}
-              className="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="beginner">Débutant</option>
-              <option value="intermediate">Intermédiaire</option>
-              <option value="advanced">Avancé</option>
-            </select>
-          </div>
-          <div className="flex-1 min-w-[150px]">
-            <label htmlFor="questionType" className="block text-sm font-medium text-gray-700">
-              Type de question
-            </label>
-            <select
-              id="questionType"
-              value={questionType}
-              onChange={(e) => setQuestionType(e.target.value)}
-              className="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="mcq">QCM</option>
-              <option value="open-ended">Questions ouvertes</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Chat Input */}
-        <div className="mt-4 relative">
-          <label htmlFor="query" className="sr-only">
-            Requête SQL
-          </label>
-          <input
-            type="text"
-            id="query"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            required
-            placeholder="Entrez votre requête SQL ici..."
-            className="p-4 w-full border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          <button
-            type="submit"
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 py-2 px-4 bg-indigo-600 text-white font-semibold rounded-full hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            Envoyer
-          </button>
-        </div>
-      </form>
     </div>
   );
 };

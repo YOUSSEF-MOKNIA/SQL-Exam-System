@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { fetchExamHistory } from "../api/Exam";
+import { Link } from "react-router-dom";
+import { History, LogOut, Trash2, ChevronRight, Search, Book, Plus } from "lucide-react";
+import { fetchExamHistory, deleteExam } from "../api/Exam";
 
-const Sidebar = ({ onLogout }) => {
+const Sidebar = ({ onExamClick, onLogout, userProfile }) => {
   const [examHistory, setExamHistory] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const loadExamHistory = async () => {
       try {
         const history = await fetchExamHistory();
-        // Sort history by date (latest to oldest)
         const sortedHistory = history.sort(
           (a, b) => new Date(b.created_at) - new Date(a.created_at)
         );
@@ -22,126 +23,148 @@ const Sidebar = ({ onLogout }) => {
     loadExamHistory();
   }, []);
 
-  const handleLogoutClick = () => {
-    localStorage.removeItem("token");
-    onLogout();
+  const handleDelete = async (e, id) => {
+    e.stopPropagation();
+    try {
+      await deleteExam(id);
+      setExamHistory(prevHistory => prevHistory.filter(exam => exam._id !== id));
+    } catch (error) {
+      console.error("Error deleting exam:", error);
+    }
   };
 
-  const handleDelete = (id) => {
-    // Handle deletion logic here
-    console.log(`Delete item with id: ${id}`);
-  };
+  const filteredHistory = examHistory.filter(exam =>
+    exam.query.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('fr-FR', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
   };
 
   return (
-    <div className="w-64 h-screen fixed bg-[#4C6E9B] text-white flex flex-col">
-      {/* Logo and System Name */}
-      <div className="flex items-center justify-center py-6 border-b border-[#FFFFFF33]">
-        <img src="syslogo.svg" alt="System Logo" className="w-14 h-14 mr-3" />
-        <span className="text-2xl font-bold">
-          ASK<span className="text-[#F9C650]">.Base</span>
-        </span>
+    <div className="w-64 h-screen fixed bg-gradient-to-b from-indigo-950 to-indigo-900 text-white flex flex-col">
+      {/* Logo Section */}
+      <div className="p-6">
+        <div className="flex items-center justify-center space-x-3">
+          <div className="p-2 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl shadow-lg">
+            <Book className="w-6 h-6 text-indigo-950" />
+          </div>
+          <span className="text-2xl font-bold">
+            ASK<span className="text-yellow-400">.Base</span>
+          </span>
+        </div>
       </div>
 
-      {/* Exam History */}
-      <div className="flex-1 px-4 py-6 overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Historique</h3>
-        </div>
-        <ul className="space-y-2">
-          {examHistory.slice(0, 4).map((exam, index) => (
-            <li
-              key={index}
-              className="flex items-center justify-between bg-[#375A7F] rounded-lg p-3 shadow-md hover:bg-[#F9C650] hover:text-black transition"
-            >
-              <div className="flex-1">
-                <p className="text-sm font-bold truncate">{exam.query}</p>
-                <p className="text-xs text-[#E2E8F0] mt-1">
-                  {new Date(exam.created_at).toLocaleDateString()}
-                </p>
-              </div>
-              <img
-                src="/bi_trash-fill.svg"
-                alt="Delete Icon"
-                className="cursor-pointer w-4 h-4 hover:text-red-400"
-                onClick={() => handleDelete(exam._id)}
-              />
-            </li>
-          ))}
-        </ul>
 
-        {/* More Button */}
-        {examHistory.length > 2 && (
-          <button
-            className="mt-4 w-full py-2 bg-[#F9C650] text-black rounded-md hover:bg-[#E2B7D2] transition"
-            onClick={toggleModal}
-          >
-            Voir tout
-          </button>
+      {/* Search Section */}
+      <div className="px-4 mb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-300" />
+          <input
+            type="text"
+            placeholder="Rechercher un examen..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-white/10 rounded-xl pl-10 pr-4 py-3 text-sm placeholder-indigo-300 focus:ring-2 focus:ring-indigo-400 focus:outline-none border border-indigo-800/50"
+          />
+        </div>
+      </div>
+
+      {/* History Section */}
+      <div className="flex-1 px-4 overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-700 scrollbar-track-transparent">
+        <div className="flex items-center justify-between py-4">
+          <div className="flex items-center space-x-2">
+            <History className="w-4 h-4 text-indigo-300" />
+            <h3 className="font-medium">Historique</h3>
+          </div>
+          {examHistory.length > 0 && (
+            <Link
+              to="/exam-history"
+              className="flex items-center text-xs text-indigo-300 hover:text-yellow-400 transition-colors"
+            >
+              Voir tout
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Link>
+          )}
+        </div>
+
+        {filteredHistory.length === 0 ? (
+          <div className="text-center py-6">
+            <div className="bg-indigo-800/30 backdrop-blur-sm rounded-xl p-6 border border-indigo-800/50">
+              <History className="w-12 h-12 text-indigo-400 mx-auto mb-3" />
+              <p className="text-indigo-300 text-sm">
+                {searchTerm ? "Aucun examen trouvé" : "Pas encore d'examens"}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {filteredHistory.slice(0, 4).map((exam, index) => (
+              <div
+                key={index}
+                onClick={() => onExamClick(exam)}
+                className="h-16 group relative bg-indigo-800/20 hover:bg-indigo-800/30 rounded-xl p-2 cursor-pointer transition-all duration-200 border border-indigo-800/50 backdrop-blur-sm"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm truncate group-hover:text-yellow-400 transition-colors">
+                      {exam.query}
+                    </h4>
+                    <p className="text-xs text-indigo-300 mt-1">
+                      {formatDate(exam.created_at)}
+                    </p>
+                  </div>
+                  <button
+                    onClick={(e) => handleDelete(e, exam._id)}
+                    className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-500/20 rounded-lg transition-all ml-2"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-400" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
-      {/* User Profile and Logout */}
-      <div className="px-4 py-6 mt-auto border-t border-[#FFFFFF33]">
-        <button
-          onClick={handleLogoutClick}
-          className="w-full flex items-center justify-start py-2 text-sm text-white hover:bg-[#E2B7D2] rounded-md"
-        >
-          <img
-            src="/solar_logout-2-bold.svg"
-            alt="Logout Icon"
-            className="mr-3 w-8 h-8"
-          />
-          <p className="text-sm font-bold text-white">Déconnecter</p>
-        </button>
-      </div>
-
-      {/* Footer */}
-      <div className="px-4 py-4 text-center">
-        <p className="text-xs text-[#E2E8F0]">&copy; 2024 ASK.Base</p>
-      </div>
-
-      {/* Modal for Full History */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96 shadow-lg">
-            <h3 className="text-xl font-bold text-black mb-4">Historique Complet</h3>
-            <ul className="space-y-3 overflow-y-auto max-h-64">
-              {examHistory.map((exam, index) => (
-                <li
-                  key={index}
-                  className="flex items-center justify-between bg-gray-200 rounded-lg p-3"
-                >
-                  <div className="flex-1">
-                    <p className="text-sm font-bold truncate text-black">
-                      {exam.query}
-                    </p>
-                    <p className="text-xs text-gray-600 mt-1">
-                      {new Date(exam.created_at).toLocaleDateString()} -{" "}
-                      {new Date(exam.created_at).toLocaleTimeString()}
-                    </p>
-                  </div>
-                  <img
-                    src="/bi_trash-fill.svg"
-                    alt="Delete Icon"
-                    className="cursor-pointer w-4 h-4 hover:text-red-400"
-                    onClick={() => handleDelete(exam._id)}
-                  />
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={toggleModal}
-              className="mt-4 w-full py-2 bg-[#375A7F] text-white rounded-md hover:bg-[#4C6E9B] transition"
-            >
-              Fermer
-            </button>
+      {/* User Profile Section */}
+      <div className="p-4 border-t border-indigo-800/50">
+        <div className="bg-indigo-800/20 rounded-xl p-4 backdrop-blur-sm border border-indigo-800/50">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+              <span className="text-lg font-bold">
+                {userProfile?.name?.charAt(0) || "U"}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium truncate">
+                {userProfile?.name || "Utilisateur"}
+              </p>
+              <p className="text-xs text-indigo-300 truncate">
+                {userProfile?.email || "Email non disponible"}
+              </p>
+            </div>
           </div>
+
+          <button
+            onClick={onLogout}
+            className="mt-4 w-full flex items-center justify-center space-x-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg py-2.5 transition-colors border border-red-500/20"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="text-sm font-medium">Déconnecter</span>
+          </button>
         </div>
-      )}
+
+        <div className="mt-4 text-center text-xs text-indigo-300">
+          &copy; 2024 ASK.Base
+        </div>
+      </div>
     </div>
   );
 };

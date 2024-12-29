@@ -1,3 +1,4 @@
+from bson import ObjectId
 from app.schemas.request import QuestionRequest
 from app.schemas.response import QuestionResponse
 from app.services.piepeline import exam_pipeline
@@ -39,7 +40,7 @@ async def generate_exam(request: QuestionRequest, token: str = Depends(oauth2_sc
             ollama_model=ollama_model,
             difficulty=request.difficulty,
             k=25,  # Retrieved documents
-            top_n=5  # Re-ranked documents
+            top_n=10  # Re-ranked documents
         )
 
         # Extract user from the token
@@ -86,3 +87,21 @@ async def get_exam_history(token: str = Depends(oauth2_scheme)):
         print(f"Error fetching exams: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching exam history: {str(e)}")
 
+@router.delete("/delete-exam/{exam_id}")
+async def delete_exam(exam_id: str, token: str = Depends(oauth2_scheme)):
+    user = await get_current_user(token)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    try:
+        # Find the exam by ID
+        exam = await exams_collection.find_one({"_id": ObjectId(exam_id), "user_id": user["_id"]})
+        if not exam:
+            raise HTTPException(status_code=404, detail="Exam not found")
+
+        # Delete the exam
+        await exams_collection.delete_one({"_id": ObjectId(exam_id)})
+        
+        return {"message": "Exam deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting exam: {str(e)}")

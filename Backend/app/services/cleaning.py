@@ -1,6 +1,5 @@
 import re
 
-
 # Function to filter irrelevant chunks from a list of retrieved documents
 # Filter out irrelevant chunks that contain table of contents, irrelevant sections, and excessive dots
 def filter_irrelevant_chunks(documents, max_dot_ratio=0.5, min_length=30):

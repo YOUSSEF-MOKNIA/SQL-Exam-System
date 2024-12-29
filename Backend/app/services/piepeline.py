@@ -4,6 +4,7 @@ from app.services.question_generator import generate_questions_parallel
 
 # Optimized exam generation pipeline
 def exam_pipeline(query, question_type, question_nbr, faiss_index, ollama_model, difficulty="intermediate", k=25, top_n=5):
+
     print("Retrieving relevant documents...")
     re_ranked_docs = retrieve_and_rerank(query, faiss_index, k, top_n)
 

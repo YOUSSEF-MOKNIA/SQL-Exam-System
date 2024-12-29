@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
 from app.schemas.user import UserCreate, UserLogin, UserResponse
 from app.utils.auth_utils import hash_password, verify_password
-from app.utils.jwt_utils import create_access_token
+from app.utils.jwt_utils import create_access_token, get_current_user
 from pymongo.errors import DuplicateKeyError
 from app.database import users_collection
 
@@ -36,3 +37,4 @@ async def login(user: UserLogin):
 
     token = create_access_token({"sub": stored_user["username"]})
     return {"access_token": token, "token_type": "bearer"}
+

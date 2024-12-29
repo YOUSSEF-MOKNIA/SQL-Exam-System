@@ -1,60 +1,72 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 const QuestionCard = ({ question, index, onAnswerChange, submitted, userAnswer }) => {
-  const [selectedAnswer, setSelectedAnswer] = useState(userAnswer || '');
-  const [options, setOptions] = useState([]);
+  const [selectedAnswer, setSelectedAnswer] = useState(userAnswer || "");
 
+  // Reset the selected answer when answers are reset in the parent component
   useEffect(() => {
-    if (question.options) {
-      setOptions(
-        Object.entries(question.options).map(([key, value]) => ({
-          label: key,
-          option: value,
-        }))
-      );
-    }
-  }, [question]);
+    setSelectedAnswer(userAnswer || "");  // Reset when userAnswer changes (like when reinitializing)
+  }, [userAnswer]);
 
-  const handleOptionChange = (answer) => {
-    setSelectedAnswer(answer);
-    onAnswerChange(index, answer);
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSelectedAnswer(value);  // Update local state immediately
+    onAnswerChange(index, value);  // Notify parent with new answer immediately
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md mb-4">
-      <h3 className="text-xl font-semibold mb-4">Question {index + 1}</h3>
-      <p className="text-lg mb-4">{question.question}</p>
+    <div className="bg-white p-6 rounded-lg shadow-lg mb-6 border border-gray-200">
+      <h3 className="text-2xl font-bold text-indigo-700 mb-4">Question {index + 1}</h3>
+      <p className="text-lg text-gray-700 mb-6">{question.question}</p>
 
-      {/* Render options if the question has options */}
-      {question.options && options.length > 0 && (
-        <div>
-          {options.map((opt, i) => (
-            <div key={i} className="mb-2">
-              <label className="flex items-center space-x-2">
+      {question.options ? (
+        <div className="space-y-4">
+          {Object.entries(question.options).map(([key, value]) => {
+            const radioId = `question-${index}-option-${key}`;
+            return (
+              <div key={key} className="flex items-center space-x-3">
                 <input
                   type="radio"
+                  id={radioId}
                   name={`question-${index}`}
-                  value={opt.label}
-                  checked={selectedAnswer === opt.label}
-                  onChange={() => handleOptionChange(opt.label)}
-                  disabled={submitted} // Disable input after submission
-                  className="form-radio h-5 w-5 text-blue-500"
+                  value={key}
+                  checked={selectedAnswer === key} // Check if this option is selected
+                  onChange={handleInputChange}  // Update the selected answer
+                  disabled={submitted}  // Disable radio buttons after submitting
+                  className="h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500"
                 />
-                <span className="text-sm">{opt.label}) {opt.option}</span>
-              </label>
-            </div>
-          ))}
+                <label
+                  htmlFor={radioId}
+                  className="text-gray-800 text-md cursor-pointer"
+                >
+                  {key}) {value}
+                </label>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="mt-4">
+          <textarea
+            value={selectedAnswer}
+            onChange={handleInputChange}
+            disabled={submitted}
+            placeholder="Entrez votre réponse ici..."
+            className="w-full p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          ></textarea>
         </div>
       )}
 
       {submitted && (
-        <div className="mt-4 bg-gray-100 p-4 rounded-md">
-          <p className="text-sm">
-            <strong>Réponse correcte:</strong> {question.correct_answer}
+        <div className="mt-6 p-4 bg-indigo-50 border border-indigo-300 rounded-md">
+          <p className="text-md font-medium text-indigo-800">
+            <strong>Réponse correcte:</strong> {question.correct_answer || "Non spécifiée"}
           </p>
-          <p className="text-sm">
-            <strong>Explication:</strong> {question.explanation}
-          </p>
+          {question.explanation && (
+            <p className="text-md text-gray-700 mt-2">
+              <strong>Explication:</strong> {question.explanation}
+            </p>
+          )}
         </div>
       )}
     </div>
